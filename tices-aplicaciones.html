@@ -169,7 +169,10 @@ nav span { font-size:12px; color:rgba(255,255,255,0.6); }
 <!-- ADMIN VIEW -->
 <div class="view" id="view-admin">
   <div class="card">
-    <h2>👨‍🏫 Aplicantes a Profesor</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <h2 style="margin-bottom:0;">👨‍🏫 Aplicantes a Profesor</h2>
+      <button onclick="adminLogout()" style="background:#fee2e2;color:#991b1b;font-weight:700;font-size:12px;padding:8px 16px;border-radius:20px;border:none;cursor:pointer;white-space:nowrap;">🚪 Cerrar sesión</button>
+    </div>
     <div class="stats">
       <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Total</div></div>
       <div class="stat"><div class="n" id="stat-pending" style="color:var(--gold);">0</div><div class="l">Pendientes</div></div>
@@ -380,13 +383,45 @@ function reject(id, email, nombre) {
 }
 
 // ── TABS ──
+var adminLogged = false;
+
 function switchTab(tab) {
+  if (tab === 'admin' && !adminLogged) {
+    document.getElementById('login-modal').style.display = 'flex';
+    return;
+  }
   document.querySelectorAll('.tab').forEach(function(t, i) {
     t.classList.toggle('active', (i===0 && tab==='form') || (i===1 && tab==='admin'));
   });
   document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
   document.getElementById('view-' + tab).classList.add('active');
   if (tab === 'admin') renderList();
+}
+
+function tryAdminLogin() {
+  var email = document.getElementById('adm-email').value.trim().toLowerCase();
+  var pass  = document.getElementById('adm-pass').value;
+  var err   = document.getElementById('adm-err');
+  if (email === 'admin@tices.do' && pass === 'tices2026') {
+    adminLogged = true;
+    document.getElementById('login-modal').style.display = 'none';
+    err.style.display = 'none';
+    switchTab('admin');
+  } else {
+    err.textContent = '⚠️ Correo o contraseña incorrectos.';
+    err.style.display = 'block';
+  }
+}
+
+function closeLoginModal() {
+  document.getElementById('login-modal').style.display = 'none';
+}
+
+function adminLogout() {
+  adminLogged = false;
+  document.getElementById('adm-email').value = '';
+  document.getElementById('adm-pass').value = '';
+  switchTab('form');
 }
 
 // ── DEMO ──
@@ -409,5 +444,28 @@ function addDemo() {
   renderList();
 }
 </script>
+
+<!-- LOGIN MODAL (admin) -->
+<div id="login-modal" style="display:none;position:fixed;inset:0;background:rgba(8,21,53,0.85);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 24px 70px rgba(0,0,0,0.4);position:relative;">
+    <button onclick="closeLoginModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#5a6480;">✕</button>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;margin-bottom:8px;">🔐</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#0f2052;">Acceso de Administrador</h3>
+      <p style="font-size:12.5px;color:#5a6480;margin-top:4px;">Solo el administrador puede ver las aplicaciones</p>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#0f2052;display:block;margin-bottom:5px;">Correo</label>
+      <input type="email" id="adm-email" placeholder="admin@tices.do" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #d0d9f0;font-size:14px;font-family:'Inter',sans-serif;outline:none;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#0f2052;display:block;margin-bottom:5px;">Contraseña</label>
+      <input type="password" id="adm-pass" placeholder="••••••••" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #d0d9f0;font-size:14px;font-family:'Inter',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+    </div>
+    <button onclick="tryAdminLogin()" style="width:100%;background:#0f2052;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:13px;border-radius:50px;border:none;cursor:pointer;">🔓 Entrar al Panel Admin</button>
+    <div id="adm-err" style="display:none;background:#fee2e2;border-radius:8px;padding:9px 13px;font-size:13px;color:#991b1b;font-weight:600;margin-top:10px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
